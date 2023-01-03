@@ -41,10 +41,8 @@ export default function CDRReportPage() {
           delete v.billsec;
           return ({
             ...v,
-            DateTimeOfCall: dayjs(v.DateTimeOfCall).format("DD-MM-YYYY HH:mm:ss"),
             calldate: dayjs(v.calldate).format("DD-MM-YYYY HH:mm:ss"),
             CallEndTime: dayjs(v.CallEndTime).format("DD-MM-YYYY HH:mm:ss"),
-            updated_datetime: dayjs(v.updated_datetime).format("DD-MM-YYYY HH:mm:ss")
           })
         })
         explodeDataWithRowTable(temp, setDataList)
