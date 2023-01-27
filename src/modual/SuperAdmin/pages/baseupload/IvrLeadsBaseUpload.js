@@ -113,17 +113,17 @@ export default function IvrLeadsBaseUpload() {
                     required: "Campaign name is required",
                     type: "text",
                 },
-                // {
-                //     name: "CampaignType",
-                //     label: "Campaign Type",
-                //     required: "Campaign Type is required",
-                //     type: "select",
-                //     options: [
-                //         { label: "Select Campaign Type", value: "" },
-                //         { label: "Delivery", value: "NDR" },
-                //         { label: "Pickup", value: "CIR" }
-                //     ]
-                // },
+                {
+                    name: "CampaignType",
+                    label: "Campaign Type",
+                    required: "Campaign Type is required",
+                    type: "select",
+                    options: [
+                        { label: "Select Campaign Type", value: "" },
+                        { label: "Delivery", value: "NDR" },
+                        { label: "Pickup", value: "CIR" }
+                    ]
+                },
             ],
         },
     ], []);

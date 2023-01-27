@@ -88,7 +88,7 @@ function convortDateStingToDateTime(datetime) {
 
 
 const ActiveDeactivate = (Enable) => {
-  return Enable === "1" ? (
+  return Enable ? (
     <b className="rounded-full bg-green-400 px-1.5 py-px text-xs font-semibold uppercase text-white hover:bg-green-500 dark:bg-transparent dark:text-zinc-200 dark:ring-1 dark:ring-green-600/70 dark:hover:text-white dark:hover:ring-green-600">
       Active
     </b>

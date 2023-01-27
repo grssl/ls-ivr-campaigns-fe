@@ -115,7 +115,7 @@ export default function IVRCallReportPage() {
               {/* <option value="3">Press 3</option> */}
             </SelectBoxInput>
           </div>
-          {/* <div>
+          <div>
             <SelectBoxInput
               label="IVR Type"
               data={{
@@ -129,7 +129,7 @@ export default function IVRCallReportPage() {
               <option value="CIR">Pickup</option>
               <option value="NDR">Delivery</option>
             </SelectBoxInput>
-          </div> */}
+          </div>
           <div>
             <InputBoxInput label="Start Date"
               data={{

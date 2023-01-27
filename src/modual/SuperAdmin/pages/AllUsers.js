@@ -34,10 +34,10 @@ export default function AllUsers() {
       accessor: "role",
       Header: "Role",
     },
-    {
-      accessor: "status",
-      Header: "Status",
-    },
+    // {
+    //   accessor: "status",
+    //   Header: "Status",
+    // },
   ];
   const [isLoading, setIsLoading] = useState(false);
   const myForm = useForm();
@@ -66,9 +66,9 @@ export default function AllUsers() {
   const userAPiCall = () => {
     APICall("/auth/getUsers").then((data) => {
       const rolData = data;
-      rolData.forEach((item, i) => {
-        rolData[i]["status"] = ActiveDeactivate(item.status)
-      });
+      // rolData.forEach((item, i) => {
+      //   rolData[i]["status"] = ActiveDeactivate(item.status)
+      // });
       setCustomer(rolData);
     });
   };
@@ -183,9 +183,9 @@ export default function AllUsers() {
           type: "select",
           options: [
             { label: "Select User Role", value: "0" },
-            { label: "Agent", value: "AGENT" },
-            { label: "Lead", value: "LEAD" },
-            { label: "Admin", value: "ADMIN" },
+            // { label: "Agent", value: "AGENT" },
+            // { label: "Lead", value: "LEAD" },
+            // { label: "Admin", value: "ADMIN" },
             { label: "Supper Admin", value: "SUPERADMIN" },
           ],
         },
@@ -232,7 +232,7 @@ export default function AllUsers() {
         <TableComponent
           columns={col}
           data={Customer}
-          selectOption={{ show: true, option: selectRowOption }}
+          selectOption={{ show: false, option: selectRowOption }}
           pagination={true}
           exportData={true}
           TicketsTitle={`Users List`}

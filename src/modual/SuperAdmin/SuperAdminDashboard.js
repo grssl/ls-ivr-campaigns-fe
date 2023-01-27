@@ -58,10 +58,10 @@ export default function SuperAdminDashboard() {
   };
 
   const TabData = [
-    {
-      title: 'Today Count  Report',
-      PageComponent: <DashboardTodayCount AdminDashboardDatList={DashboardCountsToday} />
-    },
+    // {
+    //   title: 'Today Count  Report',
+    //   PageComponent: <DashboardTodayCount AdminDashboardDatList={DashboardCountsToday} />
+    // },
     // {
     //   title: 'Total Count  Report',
     //   PageComponent: <DashboardTotalCount AdminDashboardDatList={DashboardCounts} />
