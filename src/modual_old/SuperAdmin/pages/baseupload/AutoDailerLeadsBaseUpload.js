@@ -2,51 +2,94 @@ import { useEffect, useMemo, useState } from "react";
 import Papa from "papaparse";
 import { toast } from "react-toastify";
 import { useForm } from "@formiz/core";
+import dayjs from "dayjs";
 import APICall from '../../../../components/Api/APICall';
 import TableComponent from '../../../../components/Table/TableComponent';
 import CommunModal from '../../../../components/Modal/CommunModal';
 import FormWizard from "../../../../components/Form/FormWizard";
 
+function generateAccountCode(length) {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return dayjs().format("YYMMDD") + result;
+}
 
-export default function IvrLeadsBaseUpload() {
+function chunkArrayInGroups(arr, size) {
+    var newArr = [];
+    for (var i = 0; i < arr.length; i += size) {
+        newArr.push(arr.slice(i, i + size));
+    }
+    return newArr;
+}
+
+
+
+export default function AutoDailerLeadsBaseUpload() {
     const [ShowModal, setShowModal] = useState(false);
     const [isDisabled, setDisabled] = useState(true);
     const [parsedData, setParsedData] = useState([]);
     const [tableRows, setTableRows] = useState([]);
-    const [InputFileData, setInputFileData] = useState({});
+    const [QuaueListData, setQuaueListData] = useState([]);
 
+    const [InputFileData, setInputFileData] = useState({});
     const CampaigndataUpload = async (campId) => {
-        parsedData.map(async (row, i) => {
-            const formInp = {
-                ...row,
-                fileId: campId,
-                ...InputFileData
+
+        const finarray = parsedData.map(row => (
+            {
+                phoneNumber: row.phoneNumber,
+                leadName: row.leadName,
+                campaignId: InputFileData.CampaignName,
+                campaignName: InputFileData.fileName,
+                campaignPriority: 0,
+                queueId:InputFileData.QueueID,
+                campaignStartDate: InputFileData.campaignStartDate,
+                campaignEndDate: InputFileData.campaignEndDate,
+                agentId: row.agentId,
+                priority: row.priority,
+                elastixCampaignId: campId,
+                rid: generateAccountCode(18),
+                fields: row
             }
-            await APICall(`/ivr/AddIvrBase`, "POST", formInp)
+        ))
+        console.log("finarray", finarray);
+
+        const finarrayChunckInGroup = chunkArrayInGroups(finarray, 2000);
+        const sleep = m => new Promise(r => setTimeout(r, m));
+        let i = 1;
+        for (const item of finarrayChunckInGroup) {
+            let a = i;
+            await APICall(`/uploadLeadsMultiple`, "POST", item)
                 .then(() => {
-                    if (i === parsedData.length - 1) {
-                        toast.success("Data Saved Successfully");
-                    }
+                    toast.success(`${a}/${finarrayChunckInGroup.length} Data uploaded successfully`);
                 })
                 .catch((error) => {
+
                     toast.error(error);
                 });
-            return "";
+            i++;
+            await sleep(2000);
         }
-        )
-
+        if (i > 1) {
+            toast.success("Data Saved Successfully");
+        }
     }
 
     const campaignfilesAPI = async () => {
         toast.info("Please wait.. Campaign process starting...")
         const temp = {
-            TotalRecords: parsedData.length,
-            ...InputFileData
+            ...InputFileData,
+            StartDateTime: dayjs(InputFileData.campaignStartDate).format('YYYY-MM-DD HH:mm:ss'),
+            EndDateTime: dayjs(InputFileData.campaignEndDate).format('YYYY-MM-DD HH:mm:ss'),
         }
-        APICall("/ivr/createIVRCampaign", "POST", temp).then(async (response) => {
+        APICall("/elastisk/elastiskroutes/updateCampaignElastix", "POST", temp).then(async (response) => {
             if (response.status) {
                 toast.info("Campaign created successfully.Data Upload process starting...")
-                await CampaigndataUpload(response.data[0].FileID);
+                await CampaigndataUpload(response.data[0].last_id);
+                alert(response.data[0].last_id)
             } else {
                 toast.error("Campaign not created. please try again")
             }
@@ -75,15 +118,24 @@ export default function IvrLeadsBaseUpload() {
     useEffect(() => {
 
         if (tableRows.length > 0) {
-            if (tableRows.includes("phoneNumber") !== true) {
+            if (tableRows.includes("leadName") !== true) {
+                toast.error("leadName is required in sheet");
+            } else if (tableRows.includes("phoneNumber") !== true) {
                 toast.error("phoneNumber is required in sheet");
+            } else if (tableRows.includes("agentId") !== true) {
+                toast.error("agentId is required in sheet");
+            } else if (tableRows.includes("priority") !== true) {
+                toast.error("priority is required in sheet");
             } else {
                 setDisabled(true);
                 const errorList = parsedData.map((row, i) => {
+                    if (row.leadName === "") {
+                        return (`leadName is not emptyCheck Row Number: ${i + 1}`);
+                    }
                     if (row.phoneNumber === "") {
                         return (`phoneNumber is not empty Check Row Number: ${i + 1}`);
                     }
-                    if (row.phoneNumber.length !== 10) {
+                    if (row.phoneNumber.length < 10 || row.phoneNumber.length > 12) {
                         return (`phoneNumber is not Valid Check Row Number: ${i + 1}`);
                     }
                     return ''
@@ -106,24 +158,34 @@ export default function IvrLeadsBaseUpload() {
             title: "Campaign Form",
             fileds: [
                 {
+                    name: "QueueID",
+                    label: "Queue Name",
+                    required: "Queue Name is required",
+                    type: "select",
+                    options: [
+                        { label: "Select Queue Name", value: "" },
+                        ...QuaueListData.map(v => ({ label: v.Name, value: v.ID }))
+                    ]
+                }, {
                     name: "CampaignName",
                     label: "Campaign Name",
                     required: "Campaign name is required",
                     type: "text",
+                },
+                {
+                    name: "campaignStartDate",
+                    label: "Start Date",
+                    required: "Start Date is required",
+                    type: "datetime-local",
                 }, {
-                    name: "CampaignType",
-                    label: "Campaign Type",
-                    required: "Campaign Type is required",
-                    type: "select",
-                    options: [
-                        { label: "Select Campaign Type", value: "" },
-                        { label: "Delivery", value: "NDR" },
-                        { label: "Pickup", value: "CIR" }
-                    ]
+                    name: "campaignEndDate",
+                    label: "End Date",
+                    required: "End Date is required",
+                    type: "datetime-local",
                 },
             ],
         },
-    ], []);
+    ], [QuaueListData]);
 
     const [isLoadingCampaign, setIsLoadingCampaign] = useState(false);
     const myForm = useForm();
@@ -136,7 +198,7 @@ export default function IvrLeadsBaseUpload() {
     const changeHandler = (event) => {
         const tmpFVal = event.target.value;
         const tempSlice = tmpFVal.split("\\");
-        setInputFileData(v => ({ ...v, FileName: tempSlice[tempSlice.length - 1] }));
+        setInputFileData(v => ({ ...v, fileName: tempSlice[tempSlice.length - 1] }));
         setDisabled(true);
         setIsLoadingCampaign(false);
         // Passing file data (event.target.files[0]) to parse using Papa.parse
@@ -165,6 +227,15 @@ export default function IvrLeadsBaseUpload() {
             },
         });
     };
+    useEffect(() => {
+        APICall("/elastisk/elastiskroutes/getQueueListfromElastix").then((response) => {
+            if (response.status) {
+                setQuaueListData(response.data)
+            }
+        })
+    }, [])
+
+
     return (
         <>
 
@@ -173,7 +244,7 @@ export default function IvrLeadsBaseUpload() {
                 data={parsedData}
                 pagination={true}
                 exportData={false}
-                TicketsTitle={`Upload IVR ${InputFileData.CampaignName === undefined ? "" : InputFileData.CampaignName} Campaign Data `}
+                TicketsTitle={`Upload Autodialer ${InputFileData.CampaignName === undefined ? "" : InputFileData.CampaignName} Campaign Data `}
                 other={
                     <>
                         {parsedData.length > 0 ? (
@@ -213,7 +284,7 @@ export default function IvrLeadsBaseUpload() {
                                             showModal={ShowModal}
                                             setShowModal={setShowModal}
                                             btnName="Add New Campaing"
-                                            Title="IVR Campaign"
+                                            Title="Autodialer Campaign"
                                         >
                                             <FormWizard
                                                 inputes={CampInputFildes}

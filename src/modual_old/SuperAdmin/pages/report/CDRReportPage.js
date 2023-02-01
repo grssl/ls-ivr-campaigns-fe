@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { toast } from "react-toastify";
 import TableComponent from "../../../../components/Table/TableComponent";
 import APICall, { explodeDataWithRowTable } from '../../../../components/Api/APICall';
-import { SelectBoxInput } from '../../../agent/pages/formdata/FormInputType';
+import { InputBoxInput } from '../../../agent/pages/formdata/FormInputType';
 import dayjs from "dayjs";
 
 export default function CDRReportPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [CampaignList, setCampaignList] = useState([]);
   const [DataList, setDataList] = useState({
     row: [],
     dataWithRows: [],
@@ -54,40 +53,11 @@ export default function CDRReportPage() {
       toast.error(err)
     })
   }
-
-  useEffect(() => {
-    APICall("/ivr/getCampaign").then((response) => {
-      if (response.status) {
-        setCampaignList(response.data)
-      } else {
-        toast.error(response)
-      }
-    })
-  }, [])
-
-
   return (
     <>
       <form method="post" onSubmit={SearchReportHandler}>
         <div className="grid grid-cols-2 gap-2 md:grid-cols-6">
-
           <div>
-            <SelectBoxInput
-              label="Option Type"
-              data={{
-                id: "CampaignId",
-                name: "CampaignId",
-                value: InpValue.CampaignId,
-                required: "required",
-              }}
-              inputChangeHandler={inputChangeHandler}
-            >
-              {CampaignList.map(v => (<option key={`${v.SNo}`} option value={v.SNo} >{v.campaign_name}</option>))}
-            </SelectBoxInput>
-          </div>
-
-
-          {/* <div>
             <InputBoxInput label="Start Date"
               data={{
                 id: "startDate",
@@ -110,7 +80,7 @@ export default function CDRReportPage() {
               }}
               inputChangeHandler={inputChangeHandler}
             />
-          </div> */}
+          </div>
 
           <div className="text-center items-center md:pt-7">
             {isLoading ? (
@@ -133,22 +103,20 @@ export default function CDRReportPage() {
           </div>
         </div>
       </form>
-      {
-        DataList.row.length > 0 ?
-          <>
-            <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
-              <TableComponent
-                columns={DataList.row}
-                data={DataList.dataWithRows}
-                selectOption={{ show: false, }}
-                pagination={true}
-                exportData={true}
-                TicketsTitle={`CDR Report Details`}
-              />
-            </div>
-          </>
-          : ""
-      }
+      {DataList.row.length > 0 ?
+        <>
+          <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+            <TableComponent
+              columns={DataList.row}
+              data={DataList.dataWithRows}
+              selectOption={{ show: false, }}
+              pagination={true}
+              exportData={true}
+              TicketsTitle={`CDR Report Details`}
+            />
+          </div>
+        </>
+        : ""}
     </>
   );
 }

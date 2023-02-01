@@ -13,7 +13,9 @@ export default function IvrLeadsBaseUpload() {
     const [isDisabled, setDisabled] = useState(true);
     const [parsedData, setParsedData] = useState([]);
     const [tableRows, setTableRows] = useState([]);
-    const [InputFileData, setInputFileData] = useState({});
+    const [InputFileData, setInputFileData] = useState({
+        CampaignType: "NDR"
+    });
 
     const CampaigndataUpload = async (campId) => {
         parsedData.map(async (row, i) => {
@@ -110,7 +112,8 @@ export default function IvrLeadsBaseUpload() {
                     label: "Campaign Name",
                     required: "Campaign name is required",
                     type: "text",
-                }, {
+                },
+                {
                     name: "CampaignType",
                     label: "Campaign Type",
                     required: "Campaign Type is required",

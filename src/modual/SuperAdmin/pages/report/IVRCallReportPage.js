@@ -54,7 +54,7 @@ export default function IVRCallReportPage() {
     OptionType: 0,
     startDate: dayjs().format("YYYY-MM-DD"),
     endDate: dayjs().format("YYYY-MM-DD"),
-    IvrType: "NDR"
+    IvrType: "CIR"
   })
 
   const inputChangeHandler = (e) => {
@@ -81,7 +81,7 @@ export default function IVRCallReportPage() {
           delete v.file_id;
           return ({
             ...v,
-            optionselected: UserInputOption(v.optionselected, v.campaign_type),
+            optionselected: UserInputOption(v.optionselected,v.campaign_type),
             updated_datetime: dayjs(v.updated_datetime).format("DD-MM-YYYY HH:mm:ss"),
             rdatetime: dayjs(v.updated_datetime).format("DD-MM-YYYY HH:mm:ss")
           })
@@ -112,10 +112,9 @@ export default function IVRCallReportPage() {
               <option value="0">All</option>
               <option value="1">Press 1</option>
               <option value="2">Press 2</option>
-              {/* <option value="3">Press 3</option> */}
+              <option value="3">Press 3</option>
             </SelectBoxInput>
-          </div>
-          <div>
+          </div><div>
             <SelectBoxInput
               label="IVR Type"
               data={{

@@ -19,7 +19,7 @@ export default function IVRCampaigns() {
         let tempResponse = response.data.map((row) => ({
           ...row,
           created_at: dayjs(row.created_at).format("DD/MM/YYYY HH:mm:ss"),
-          Enabled: ActiveDeactivate(row.Enabled),
+          status: ActiveDeactivate(row.status),
         }))
         explodeDataWithRowTable(tempResponse, setCampaignList)
       } else {
@@ -42,7 +42,6 @@ export default function IVRCampaigns() {
               data={CampaignList.dataWithRows}
               pagination={true}
               exportData={true}
-              PageSize={20}
               TicketsTitle={`IVR Campaign List`}
             /> : ""
         }

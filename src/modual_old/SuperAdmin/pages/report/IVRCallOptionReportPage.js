@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { toast } from "react-toastify";
 import TableComponent from "../../../../components/Table/TableComponent";
 import APICall, { explodeDataWithRowTable } from '../../../../components/Api/APICall';
-import { SelectBoxInput } from '../../../agent/pages/formdata/FormInputType';
+import { InputBoxInput, SelectBoxInput } from '../../../agent/pages/formdata/FormInputType';
 import dayjs from "dayjs";
 
-export default function CDRReportPage() {
+export default function IVRCallOptionReportPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [CampaignList, setCampaignList] = useState([]);
   const [DataList, setDataList] = useState({
     row: [],
     dataWithRows: [],
@@ -15,8 +14,10 @@ export default function CDRReportPage() {
   });
 
   const [InpValue, setInpValue] = useState({
+    OptionType: 0,
     startDate: dayjs().format("YYYY-MM-DD"),
     endDate: dayjs().format("YYYY-MM-DD"),
+    IvrType: "CIR"
   })
 
   const inputChangeHandler = (e) => {
@@ -36,16 +37,12 @@ export default function CDRReportPage() {
     });
     setIsLoading(true);
 
-    APICall(`/elastisk/elastiskroutes/cdrreport`, "POST", InpValue).then(data => {
+    APICall(`/ivr/ivrdataReport`, "POST", InpValue).then(data => {
       if (data.status) {
-        const temp = data.data.map(v => {
-          delete v.billsec;
-          return ({
-            ...v,
-            calldate: dayjs(v.calldate).format("DD-MM-YYYY HH:mm:ss"),
-            CallEndTime: dayjs(v.CallEndTime).format("DD-MM-YYYY HH:mm:ss"),
-          })
-        })
+        const temp = data.data.map(v => ({
+          ...v,
+          updated_datetime: dayjs(v.updated_datetime).format("DD-MM-YYYY HH:mm:ss")
+        }))
         explodeDataWithRowTable(temp, setDataList)
       }
       setIsLoading(false);
@@ -54,40 +51,42 @@ export default function CDRReportPage() {
       toast.error(err)
     })
   }
-
-  useEffect(() => {
-    APICall("/ivr/getCampaign").then((response) => {
-      if (response.status) {
-        setCampaignList(response.data)
-      } else {
-        toast.error(response)
-      }
-    })
-  }, [])
-
-
   return (
     <>
       <form method="post" onSubmit={SearchReportHandler}>
         <div className="grid grid-cols-2 gap-2 md:grid-cols-6">
-
           <div>
             <SelectBoxInput
               label="Option Type"
               data={{
-                id: "CampaignId",
-                name: "CampaignId",
-                value: InpValue.CampaignId,
+                id: "OptionType",
+                name: "OptionType",
+                value: InpValue.OptionType,
                 required: "required",
               }}
               inputChangeHandler={inputChangeHandler}
             >
-              {CampaignList.map(v => (<option key={`${v.SNo}`} option value={v.SNo} >{v.campaign_name}</option>))}
+              <option value="0">All</option>
+              <option value="1">Press 1</option>
+              <option value="2">Press 2</option>
+              <option value="3">Press 3</option>
+            </SelectBoxInput>
+          </div><div>
+            <SelectBoxInput
+              label="IVR Type"
+              data={{
+                id: "IvrType",
+                name: "IvrType",
+                value: InpValue.IvrType,
+                required: "required",
+              }}
+              inputChangeHandler={inputChangeHandler}
+            >
+              <option value="CIR">Pickup</option>
+              <option value="NDR">Delivery</option>
             </SelectBoxInput>
           </div>
-
-
-          {/* <div>
+          <div>
             <InputBoxInput label="Start Date"
               data={{
                 id: "startDate",
@@ -110,7 +109,7 @@ export default function CDRReportPage() {
               }}
               inputChangeHandler={inputChangeHandler}
             />
-          </div> */}
+          </div>
 
           <div className="text-center items-center md:pt-7">
             {isLoading ? (
@@ -133,22 +132,20 @@ export default function CDRReportPage() {
           </div>
         </div>
       </form>
-      {
-        DataList.row.length > 0 ?
-          <>
-            <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
-              <TableComponent
-                columns={DataList.row}
-                data={DataList.dataWithRows}
-                selectOption={{ show: false, }}
-                pagination={true}
-                exportData={true}
-                TicketsTitle={`CDR Report Details`}
-              />
-            </div>
-          </>
-          : ""
-      }
+      {DataList.row.length > 0 ?
+        <>
+          <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+            <TableComponent
+              columns={DataList.row}
+              data={DataList.dataWithRows}
+              selectOption={{ show: false, }}
+              pagination={true}
+              exportData={true}
+              TicketsTitle={`IVR Report Details`}
+            />
+          </div>
+        </>
+        : ""}
     </>
   );
 }
